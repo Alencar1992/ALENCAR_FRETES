@@ -305,8 +305,9 @@ function fecharModalExpediente() { document.getElementById('modalExpediente').st
 function fecharModal() { document.getElementById('avisoLucas').style.display = 'none'; }
 
 function prepararEnvio() {
-    if (!tipoResidencia) return alert("Selecione se a entrega é em CASA ou APTO.");
-    if (!document.getElementById('nome_cliente').value) return alert("Preencha o Nome do Cliente!");
+    if (!tipoResidencia) return mostrarAviso("Por favor, selecione se a entrega é em CASA ou APTO.");
+    if (!document.getElementById('nome_cliente').value) return mostrarAviso("Por favor, preencha o Nome do Cliente!");
+    
     document.getElementById('avisoLucas').style.display = 'flex';
 }
 
