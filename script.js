@@ -388,3 +388,11 @@ async function registrarLogJS(km, valor, endereco, bairro) {
     let pacoteDeDados = { data: new Date().toLocaleString("pt-BR"), ip: ipUsuario, dispositivo: dispFormatado, endereco: endereco, bairro: bairro, km: km, valor: valor };
     fetch(GOOGLE_SCRIPT_URL_LOG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(pacoteDeDados) });
 }
+
+// ==========================================
+// FUNÇÃO UNIVERSAL DE AVISOS (GLASSMORPHISM)
+// ==========================================
+function mostrarAviso(mensagem) {
+    document.getElementById('textoAviso').innerText = mensagem;
+    document.getElementById('modalAviso').style.display = 'flex';
+}
