@@ -20,13 +20,25 @@
     </div>
 </div>
 
-<div id="modalLimiteSemanal" class="modal-overlay">
-    <div class="msg-box danger">
-        <h2 style="color: #ff4757; margin-bottom: 15px;">⚠️ LIMITE EXCEDIDO</h2>
-        <p>Você atingiu o limite máximo de consultas do sistema.</p>
-        <p style="font-size: 0.9em; margin-bottom: 20px; color: #aaa;">Clique no botão abaixo para falar direto comigo.</p>
-        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp">📱 FALAR COM O LUCAS</a>
-        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt">Voltar ao aplicativo</button>
+<div id="modalLimiteSemanal" class="modal-overlay" style="display: none;">
+    <div class="msg-box danger-glass">
+        <div class="icon-shield">🛡️</div>
+        <h2>LIMITE EXCEDIDO</h2>
+        <div class="divider-glow"></div>
+        <p class="main-text">
+            Você atingiu o limite máximo de <strong>5 consultas semanais</strong> permitidas para o seu endereço IP.
+        </p>
+        <p class="sub-text">
+            Não se preocupe! Para continuarmos com o seu atendimento e garantir o seu frete rápido, clique no botão abaixo para falar direto comigo no WhatsApp.
+        </p>
+        
+        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp glow-btn-wa">
+            📱 FALAR COM O LUCAS
+        </a>
+        
+        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt-back">
+            Voltar ao aplicativo
+        </button>
     </div>
 </div>
 
