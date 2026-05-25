@@ -22,14 +22,14 @@
     </div>
 </div>
 
-<div id="modalExpediente" class="modal-overlay">
+<div id="modalAviso" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
-        <p style="margin-bottom: 20px;">A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
-        <button class="btn-green" onclick="continuarCalculo()">✅ OK, CONTINUAR</button>
-        <button class="btn-outline" onclick="fecharModalExpediente()">CANCELAR</button>
+        <p id="textoAviso" style="margin-bottom: 20px;">Mensagem de erro aqui.</p>
+        <button class="btn-outline-dark" onclick="document.getElementById('modalAviso').style.display='none'">OK, ENTENDI</button>
     </div>
 </div>
+
 
 <div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
