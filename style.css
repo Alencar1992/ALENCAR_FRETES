@@ -1,94 +1,341 @@
-:root { 
-    --bg: #0a0a0c; --card: #151518; --accent: #2ecc71; --text: #ffffff; 
-    --verde-frete: #2ecc71; --verde-dark: #1e8449; --azul-3d: #00d4ff;
-    --whatsapp: #25d366; --whatsapp-dark: #128c7e; --btn-inativo: #1a1a1e;
+/* =========================================
+   BASE E FUNDO (Com link direto da web)
+   ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-/* Correção do fundo (lembre de subir a imagem fundo.jpg no seu repositório) */
 body {
-    background: linear-gradient(rgba(15, 20, 30, 0.85), rgba(15, 20, 30, 0.95)), url('logo-cowboy-motofrete.png') no-repeat center center fixed;
+    font-family: 'Poppins', sans-serif;
+    /* Imagem noturna direto da web para evitar erros. Para usar a sua gerada, troque a URL por 'url(fundo.jpg)' */
+    background: linear-gradient(rgba(10, 15, 25, 0.85), rgba(10, 15, 25, 0.95)), url('https://images.unsplash.com/photo-1568772585407-9361f9bf3c87?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
     background-size: cover;
     color: #ffffff;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
 }
 
-/* O Título Gigante Responsivo */
+/* =========================================
+   CABEÇALHO (O Título Gigante)
+   ========================================= */
+.header-top {
+    text-align: center;
+    padding: 30px 15px 10px;
+}
+
+.logo-container img {
+    width: 90px;
+    filter: drop-shadow(0px 0px 15px rgba(46, 204, 113, 0.6));
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
 .header-title h1 {
-    font-size: clamp(2.5rem, 8vw, 5rem); /* Cresce e diminui conforme a tela */
-    font-weight: 900;
+    font-size: clamp(2rem, 8vw, 4rem); /* Responsivo: Gigante no PC, ajustado no Celular */
+    font-weight: 800;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #00d4ff 0%, #25D366 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #2ecc71 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 3px 5px 15px rgba(0, 0, 0, 0.8);
-    margin: 15px 0;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+/* =========================================
+   CONTAINER PRINCIPAL (Efeito Vidro)
+   ========================================= */
+.container {
+    background: rgba(20, 25, 35, 0.65);
+    backdrop-filter: blur(12px); /* Efeito de vidro */
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    max-width: 600px;
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================
+   FORMULÁRIOS E INPUTS MODERNOS
+   ========================================= */
+.input-group {
+    margin-bottom: 18px;
+    width: 100%;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #aab2bd;
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"] {
+    width: 100%;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.row-endereco-num {
+    display: flex;
+    gap: 15px;
+}
+
+/* =========================================
+   BOTÕES E SELEÇÕES
+   ========================================= */
+.box-destaque {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.tipo-busca, .tipo-residencia {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-selecao {
+    flex: 1;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-selecao.active {
+    background: rgba(46, 204, 113, 0.2);
+    border-color: #2ecc71;
+    color: #2ecc71;
+}
+
+.btn-green {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-whatsapp {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
     text-align: center;
-    letter-spacing: 3px;
+    transition: transform 0.2s;
+    font-family: 'Poppins', sans-serif;
 }
 
-/* Ajuste da logo para acompanhar o título */
-.logo-container img {
-    width: 120px; /* Deixando a logo um pouco mais imponente */
-    filter: drop-shadow(0px 0px 10px rgba(0, 212, 255, 0.5));
+.btn-outline {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: #ccc;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
 }
 
+.btn-outline:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
 
-#map { height: 35vh; width: 100%; z-index: 1; }
-.leaflet-routing-container { display: none !important; }
+.shadow-glow {
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+}
+.shadow-glow:active { transform: scale(0.98); }
 
-.container { padding: 20px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
-.box-destaque { background: var(--card); padding: 15px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.btn-txt {
+    background: none;
+    border: none;
+    color: #888;
+    margin-top: 15px;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: 'Poppins', sans-serif;
+}
 
-label { font-size: 0.8em; color: var(--verde-frete); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
-input { background: #1a1a1e; border: 1px solid #444; color: white; padding: 15px; border-radius: 10px; font-size: 16px; width: 100%; box-sizing: border-box; transition: all 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-input:focus { outline: none; border-color: var(--verde-frete); box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); }
-.row-endereco-num { display: grid; grid-template-columns: 3fr 1fr; gap: 15px; }
+.botoes-acao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
 
-.tipo-residencia, .tipo-busca { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
-.btn-selecao { background: var(--btn-inativo); color: #666; border: 1px solid #333; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.2s; font-size: 13px; text-transform: uppercase; box-shadow: 0 4px 0 #111; }
-.btn-selecao.active { background: var(--verde-frete); color: #000; border-color: var(--verde-frete); box-shadow: 0 5px 0 var(--verde-dark); transform: translateY(-2px); }
+/* =========================================
+   CARDS DE RESUMO E MAPA
+   ========================================= */
+.resultado-grid {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
 
-button { border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; width: 100%; letter-spacing: 1px; font-size: 15px; transition: all 0.2s; }
-.botoes-acao { display: flex; flex-direction: column; gap: 15px; margin-top: 5px; }
+.card-info {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+}
 
-.btn-3d-green { background: var(--verde-frete); color: #000; box-shadow: 0 6px 0 var(--verde-dark), 0 8px 15px rgba(46, 204, 113, 0.4); border-radius: 12px; padding: 16px; }
-.btn-3d-green:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--verde-dark); }
-.btn-whatsapp-3d { background: var(--whatsapp); color: white; box-shadow: 0 6px 0 var(--whatsapp-dark), 0 8px 20px rgba(37, 211, 102, 0.4); border-radius: 12px; padding: 18px; font-size: 16px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-.btn-whatsapp-3d:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--whatsapp-dark); }
-.btn-clear { background: #222; color: #aaa; padding: 14px; border-radius: 10px; border: 1px solid #444; box-shadow: 0 4px 0 #111; }
-.btn-clear:active { transform: translateY(2px); box-shadow: 0 2px 0 #111; }
+.card-info.destaque {
+    border-color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+}
 
-#campo-resumo { background: linear-gradient(145deg, #151518, #0a0a0c); padding: 25px 20px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 212, 255, 0.05); text-align: center; margin: 15px 0; }
-.titulo-neon { color: var(--verde-frete); margin-top: 0; margin-bottom: 20px; font-size: 1.3em; letter-spacing: 2px; text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
-.resultado-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.card-info-3d { background: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.15), 0 5px 15px rgba(0,0,0,0.5); }
-.card-info-3d label { font-size: 11px; color: var(--azul-3d); margin-bottom: 8px; }
-.card-info-3d span { font-size: 1.6em; font-weight: 900; color: #fff; display: block; }
-.valor-destaque { color: var(--verde-frete) !important; font-size: 1.8em !important; text-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
-.bairro-tempo-display { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #333; }
-.info-item { display: flex; flex-direction: column; align-items: center; }
-.info-text-label { color: #ccc; font-size: 0.8em; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-.info-value-neon { color: var(--azul-3d); font-weight: 900; font-size: 1.3em; text-shadow: 0 0 10px rgba(0, 212, 255, 0.7); }
-#aviso-taxa { display: none; background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid #f1c40f; padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 12px; font-weight: 900; letter-spacing: 1px; }
+.card-info label {
+    display: block;
+    font-size: 0.75rem;
+    color: #aab2bd;
+    margin-bottom: 5px;
+}
 
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; flex-direction: column; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-.msg-box { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; width: 85%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-.msg-box h2 { margin-top: 0; font-weight: 900; margin-bottom: 15px;}
-.msg-box p { color: #ccc; font-weight: 600; font-size: 0.95em; line-height: 1.5; margin-bottom: 25px;}
-.btn-voltar { background: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 14px; border-radius: 10px; margin-top: 15px; }
+.card-info span {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+}
+.card-info.destaque span {
+    color: #2ecc71;
+}
 
-.icone-mapa-moto { font-size: 32px; line-height: 1; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-.icone-mapa-casa { font-size: 32px; line-height: 1; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+.bairro-tempo-display {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-/* ==== NOVO: ESTILOS DO AUTOCOMPLETE ==== */
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.3);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+#aviso-taxa {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #f1c40f;
+    display: none;
+}
+
+#mapa-container {
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(46, 204, 113, 0.3);
+}
+
+#map { height: 250px; }
+
+/* =========================================
+   MODAIS (Glassmorphism)
+   ========================================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.msg-box {
+    background: rgba(25, 30, 40, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.msg-box.danger {
+    border-color: #ff4757;
+    box-shadow: 0 0 30px rgba(255, 71, 87, 0.2);
+}
+
+/* =========================================
+   AUTOCOMPLETE (Lista Suspensa)
+   ========================================= */
 .autocomplete-lista {
-    display: none; position: absolute; top: 100%; left: 0; right: 0;
-    background: #1a1a1e; border: 1px solid var(--verde-frete); border-radius: 0 0 10px 10px;
-    z-index: 1000; max-height: 200px; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: rgba(30, 35, 45, 0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    margin-top: 5px;
 }
 .sugestao-item {
-    padding: 12px 15px; border-bottom: 1px solid #333; cursor: pointer;
-    color: #ccc; font-size: 13px; line-height: 1.4; transition: background 0.2s; text-align: left;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.9rem;
 }
-.sugestao-item:hover { background: #2a2a2e; color: #fff; }
-.sugestao-item:last-child { border-bottom: none; }
+.sugestao-item:hover { background: rgba(46, 204, 113, 0.2); }
