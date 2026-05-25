@@ -8,11 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="style.css?v=20" />
+    <link rel="stylesheet" href="style.css?v=18" />
 </head>
 <body>
 
-<div id="modalAviso" class="modal-overlay" style="display: none;">
+<div id="modalAviso" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
         <p id="textoAviso" style="margin-bottom: 20px;">Mensagem de erro aqui.</p>
@@ -20,29 +20,17 @@
     </div>
 </div>
 
-<div id="modalLimiteSemanal" class="modal-overlay" style="display: none;">
-    <div class="msg-box danger-glass">
-        <div class="icon-shield">🛡️</div>
-        <h2>LIMITE EXCEDIDO</h2>
-        <div class="divider-glow"></div>
-        <p class="main-text">
-            Você atingiu o limite máximo de <strong>consultas semanais</strong> permitidas para versão free.
-        </p>
-        <p class="sub-text">
-            Não se preocupe! Para continuarmos com o seu atendimento e garantir o seu frete rápido, clique no botão abaixo para falar direto comigo no WhatsApp.
-        </p>
-        
-        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp glow-btn-wa">
-            📱 FALAR COM O LUCAS
-        </a>
-        
-        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt-back">
-            Voltar ao aplicativo
-        </button>
+<div id="modalLimiteSemanal" class="modal-overlay">
+    <div class="msg-box danger">
+        <h2 style="color: #ff4757; margin-bottom: 15px;">⚠️ LIMITE EXCEDIDO</h2>
+        <p>Você atingiu o limite máximo de consultas do sistema.</p>
+        <p style="font-size: 0.9em; margin-bottom: 20px; color: #aaa;">Clique no botão abaixo para falar direto comigo.</p>
+        <a href="https://wa.me/5511981071822?text=Olá, Lucas! Meu sistema bloqueou por limite de consultas. Pode me ajudar com um orçamento de frete?" class="btn-whatsapp">📱 FALAR COM O LUCAS</a>
+        <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt">Voltar ao aplicativo</button>
     </div>
 </div>
 
-<div id="modalExpediente" class="modal-overlay" style="display: none;">
+<div id="modalExpediente" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #f1c40f; margin-bottom: 15px;">⚠️ ATENÇÃO</h2>
         <p style="margin-bottom: 20px;">A solicitação será enviada para o WhatsApp do Lucas para análise de disponibilidade.</p>
@@ -51,7 +39,7 @@
     </div>
 </div>
 
-<div id="avisoLucas" class="modal-overlay" style="display: none;">
+<div id="avisoLucas" class="modal-overlay">
     <div class="msg-box">
         <h2 style="color: #2ecc71; margin-bottom: 15px;">TUDO CERTO!</h2>
         <p style="margin-bottom: 20px;">Deseja enviar os dados do pedido para o WhatsApp?</p>
@@ -187,12 +175,8 @@
     </div>
 </div>
 
-<footer style="text-align: center; padding: 20px 0 30px; opacity: 0.6; font-size: 0.75rem; color: #fff; letter-spacing: 1px; font-family: 'Montserrat', sans-serif;">
-    since @2025 - version 2.0 - Build 25.05.26
-</footer>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=20"></script>
+<script src="script.js?v=18"></script>
 </body>
 </html>
