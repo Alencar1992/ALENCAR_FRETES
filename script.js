@@ -15,6 +15,10 @@ let rotaCalculada = false;
 let bairroGlobal = "";
 let tempoGlobal = "";
 let timeoutBusca = null;
+let timeoutBuscaP2 = null; // Variável para o delay do autocomplete da parada 2
+
+// Nova variável global: Controla se a rota atual possui uma parada extra
+let temParada2 = false; 
 
 // Variável global para armazenar o IP temporariamente e não sobrecarregar a API
 let ipGlobalCache = null;
@@ -22,6 +26,9 @@ let ipGlobalCache = null;
 // ==========================================
 // FUNÇÃO DE CAPTURA DE IP REUTILIZÁVEL
 // ==========================================
+/**
+ * Captura o IP do usuário consumindo a API ipify.
+ */
 async function obterIpUsuario() {
     if (ipGlobalCache) return ipGlobalCache;
     try {
@@ -38,11 +45,13 @@ async function obterIpUsuario() {
 // ==========================================
 // FUNÇÃO DE AVISOS SEGUROS
 // ==========================================
+/**
+ * Exibe mensagens de erro em um modal amigável na tela.
+ */
 function mostrarAviso(mensagem) {
     const modal = document.getElementById('modalAviso');
     const texto = document.getElementById('textoAviso');
     
-    // Se o modal existir no HTML, ele exibe bonito. Se não, usa o alert padrão para não travar o app.
     if (modal && texto) {
         texto.innerText = mensagem;
         modal.style.display = 'flex';
@@ -54,18 +63,25 @@ function mostrarAviso(mensagem) {
 // ==========================================
 // INICIALIZAÇÃO DO MAPA (LEAFLET)
 // ==========================================
+// Inicia o mapa na div 'map' centralizado na base
 const map = L.map('map', { zoomControl: false }).setView(ORIGEM_FIXA, 15);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
+// Ícones personalizados
 const iconeMoto = L.divIcon({ html: '🏍️', className: 'icone-mapa-moto', iconSize: [35, 35], iconAnchor: [17, 17] });
 const iconeCasa = L.divIcon({ html: '🏠', className: 'icone-mapa-casa', iconSize: [35, 35], iconAnchor: [17, 17] });
+const iconeParada = L.divIcon({ html: '🛑', className: 'icone-mapa-parada', iconSize: [35, 35], iconAnchor: [17, 17] });
 
+// Controlador de rotas. Atualizado para entender rotas com 3 pontos (Origem -> Parada 1 -> Destino)
 let control = L.Routing.control({
     waypoints: [], 
     lineOptions: { styles: [{ color: '#2ecc71', weight: 6, opacity: 0.9 }] }, 
     createMarker: function(i, wp, n) {
         if (i === 0) return L.marker(wp.latLng, { icon: iconeMoto }).bindPopup("<b>Origem:</b><br>Alencar Fretes");
-        if (i === n - 1) return L.marker(wp.latLng, { icon: iconeCasa }).bindPopup("<b>Destino:</b><br>Cliente");
+        // Se for o último ponto (seja Parada 1 ou Parada 2), é o destino final
+        if (i === n - 1) return L.marker(wp.latLng, { icon: iconeCasa }).bindPopup("<b>Destino Final:</b><br>Cliente");
+        // Se houver 3 pontos e for o ponto do meio (índice 1)
+        if (n === 3 && i === 1) return L.marker(wp.latLng, { icon: iconeParada }).bindPopup("<b>1ª Parada</b>");
         return null;
     },
     addWaypoints: false,
@@ -76,6 +92,9 @@ let control = L.Routing.control({
 // ==========================================
 // CONTROLES DE INTERFACE E EVENTOS
 // ==========================================
+/**
+ * Alterna as seleções visuais dos botões de Casa ou Apartamento.
+ */
 function selecionarTipo(tipo) {
     tipoResidencia = tipo;
     document.getElementById('btn-casa').className = tipo === 'casa' ? 'btn-selecao active' : 'btn-selecao';
@@ -83,6 +102,9 @@ function selecionarTipo(tipo) {
     document.getElementById('dados-apto').style.display = tipo === 'apto' ? 'block' : 'none';
 }
 
+/**
+ * Alterna a visualização entre busca por CEP ou Rua para o destino Principal.
+ */
 function selecionarBusca(tipo) {
     tipoBusca = tipo;
     document.getElementById('btn-por-cep').className = tipo === 'cep' ? 'btn-selecao active' : 'btn-selecao';
@@ -91,16 +113,58 @@ function selecionarBusca(tipo) {
     document.getElementById('campo-rua').style.display = tipo === 'rua' ? 'block' : 'none';
 }
 
+/**
+ * Exibe o bloco da 2ª parada.
+ */
+function mostrarParada2() {
+    document.getElementById('bloco-parada2').style.display = 'block';
+    document.getElementById('btn-mostrar-parada2').style.display = 'none';
+    temParada2 = true;
+    selecionarBuscaP2('rua'); // Padrão
+}
+
+/**
+ * Esconde e limpa o bloco da 2ª parada.
+ */
+function ocultarParada2() {
+    document.getElementById('bloco-parada2').style.display = 'none';
+    document.getElementById('btn-mostrar-parada2').style.display = 'block';
+    temParada2 = false;
+    document.getElementById('cep_parada2').value = '';
+    document.getElementById('num_residencia_cep_p2').value = '';
+    document.getElementById('rua_pelo_cep_p2').value = '';
+    document.getElementById('destino_parada2').value = '';
+    document.getElementById('num_residencia_p2').value = '';
+}
+
+/**
+ * Alterna a visualização entre busca por CEP ou Rua para a 2ª Parada.
+ */
+function selecionarBuscaP2(tipo) {
+    document.getElementById('btn-por-cep-p2').className = tipo === 'cep' ? 'btn-selecao active' : 'btn-selecao';
+    document.getElementById('btn-por-rua-p2').className = tipo === 'rua' ? 'btn-selecao active' : 'btn-selecao';
+    document.getElementById('campo-cep-p2').style.display = tipo === 'cep' ? 'block' : 'none';
+    document.getElementById('campo-rua-p2').style.display = tipo === 'rua' ? 'block' : 'none';
+}
+
+// Oculta a lista de sugestões ao clicar fora
 document.addEventListener('click', function(e) {
     if (e.target.id !== 'destino') {
         const lista = document.getElementById('lista-sugestoes');
         if(lista) lista.style.display = 'none';
+    }
+    if (e.target.id !== 'destino_parada2') {
+        const lista2 = document.getElementById('lista-sugestoes-p2');
+        if(lista2) lista2.style.display = 'none';
     }
 });
 
 // ==========================================
 // AUTOCOMPLETE E BUSCA CEP
 // ==========================================
+/**
+ * Busca sugestões de endereço via API (Destino Principal).
+ */
 async function sugerirEndereco(texto) {
     const lista = document.getElementById('lista-sugestoes');
     if (texto.length < 4) { lista.style.display = 'none'; return; }
@@ -133,17 +197,53 @@ async function sugerirEndereco(texto) {
     }, 600);
 }
 
+/**
+ * Busca sugestões de endereço via API (2ª Parada).
+ */
+async function sugerirEnderecoP2(texto) {
+    const lista = document.getElementById('lista-sugestoes-p2');
+    if (texto.length < 4) { lista.style.display = 'none'; return; }
+    
+    clearTimeout(timeoutBuscaP2);
+    timeoutBuscaP2 = setTimeout(async () => {
+        try {
+            const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+            
+            lista.innerHTML = '';
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'sugestao-item';
+                    div.innerText = item.display_name;
+                    div.onclick = () => {
+                        const partes = item.display_name.split(',');
+                        document.getElementById('destino_parada2').value = partes[0].trim();
+                        lista.style.display = 'none';
+                    };
+                    lista.appendChild(div);
+                });
+                lista.style.display = 'block';
+            } else {
+                lista.style.display = 'none';
+            }
+        } catch (e) { console.warn("Autocompletar P2 falhou", e); }
+    }, 600);
+}
+
+/**
+ * Busca rua pelo CEP via API ViaCEP (Destino Principal).
+ */
 async function buscarCep() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     if (cep.length !== 8) return;
-    
     const inputRua = document.getElementById('rua_pelo_cep');
     inputRua.value = "Buscando...";
 
     try {
         const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await resp.json();
-        
         if (!data.erro) {
             inputRua.value = data.logradouro;
             bairroGlobal = data.bairro; 
@@ -151,10 +251,28 @@ async function buscarCep() {
             inputRua.value = "";
             mostrarAviso("CEP não encontrado."); 
         }
-    } catch (e) { 
-        inputRua.value = "";
-        console.warn("Erro no ViaCEP"); 
-    }
+    } catch (e) { inputRua.value = ""; console.warn("Erro no ViaCEP"); }
+}
+
+/**
+ * Busca rua pelo CEP via API ViaCEP (2ª Parada).
+ */
+async function buscarCepP2() {
+    const cep = document.getElementById('cep_parada2').value.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+    const inputRua = document.getElementById('rua_pelo_cep_p2');
+    inputRua.value = "Buscando...";
+
+    try {
+        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data = await resp.json();
+        if (!data.erro) {
+            inputRua.value = data.logradouro;
+        } else { 
+            inputRua.value = "";
+            mostrarAviso("CEP da 2ª Parada não encontrado."); 
+        }
+    } catch (e) { inputRua.value = ""; console.warn("Erro no ViaCEP P2"); }
 }
 
 // ==========================================
@@ -166,12 +284,14 @@ function liberarBotao(mensagem = "🚀 CALCULAR O FRETE") {
     btn.disabled = false;
 }
 
+/**
+ * Valida se os campos de texto foram preenchidos antes de consumir as APIs.
+ */
 function validacoesIniciais() {
     if (!tipoBusca) { mostrarAviso("Selecione 'Por CEP' ou 'Nome da Rua' primeiro."); return false; }
     
     const dataVal = document.getElementById('data_entrega').value;
     const horaVal = document.getElementById('hora_entrega').value;
-    
     if(!dataVal || !horaVal) { mostrarAviso("Por favor, preencha a Data e o Horário da entrega!"); return false; }
     
     if (tipoBusca === 'cep' && (!document.getElementById('cep').value || !document.getElementById('num_residencia_cep').value)) {
@@ -179,12 +299,20 @@ function validacoesIniciais() {
     } else if (tipoBusca === 'rua' && (!document.getElementById('destino').value || !document.getElementById('num_residencia').value)) {
         mostrarAviso("Preencha a Rua e o Número da residência!"); return false;
     }
+
+    // Validação extra caso a 2ª Parada esteja ativa
+    if (temParada2) {
+        let tipoBuscaP2 = document.getElementById('campo-cep-p2').style.display === 'block' ? 'cep' : 'rua';
+        if (tipoBuscaP2 === 'cep' && (!document.getElementById('cep_parada2').value || !document.getElementById('num_residencia_cep_p2').value)) {
+            mostrarAviso("Preencha o CEP e o Número da 2ª Parada!"); return false;
+        } else if (tipoBuscaP2 === 'rua' && (!document.getElementById('destino_parada2').value || !document.getElementById('num_residencia_p2').value)) {
+            mostrarAviso("Preencha a Rua e o Número da 2ª Parada!"); return false;
+        }
+    }
+
     return true; 
 }
 
-// ==========================================
-// VALIDAÇÃO E GATILHO INICIAL (CORRIGIDO)
-// ==========================================
 async function iniciarVerificacao() {
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "⏳ VERIFICANDO...";
@@ -196,11 +324,8 @@ async function iniciarVerificacao() {
     }
 
     try {
-        // Coleta o IP real
         const ipReal = await obterIpUsuario();
-        
         const controller = new AbortController();
-        // ⚠️ CORREÇÃO: Aumentado para 6000ms. Com 1500ms ele abortava a segurança e deixava passar.
         const timeoutId = setTimeout(() => controller.abort(), 6000); 
         
         const pacote = JSON.stringify({ tipo: "verificar_limite", ip: ipReal });
@@ -212,21 +337,16 @@ async function iniciarVerificacao() {
         });
         
         clearTimeout(timeoutId);
-        
-        // Lê a resposta do servidor do Google
         const resposta = await respostaGas.json();
         
         if (resposta.result === "bloqueado") {
-            // ⚠️ MENSAGEM CUSTOMIZADA E BLOQUEIO IMEDIATO
             mostrarAviso("Excedeu o limite de acesso semanal. Contacte o Lucas via WhatsApp para calcular o frete e verificar a disponibilidade!");
             liberarBotao();
-            return; // Impede que a função buscarRota() seja chamada
+            return; 
         }
     } catch (e) {
-        console.warn("Verificação ignorada por demora excessiva ou erro de rede. Seguindo para o cálculo.");
+        console.warn("Verificação ignorada por demora. Seguindo para o cálculo.");
     }
-
-    // Se chegou até aqui (não foi bloqueado), segue o fluxo normal
     validarExpediente();
 }
 
@@ -250,46 +370,84 @@ function continuarCalculo() {
 }
 
 // ==========================================
-// CÁLCULO DE ROTA (O MOTOR)
+// CÁLCULO DE ROTA (O MOTOR PRINCIPAL)
 // ==========================================
+/**
+ * Converte os endereços em coordenadas e desenha a rota no mapa.
+ */
 async function buscarRota() {
     const btn = document.getElementById('btn-calcular');
     btn.innerHTML = "⏳ CALCULANDO...";
     btn.disabled = true;
 
-    let queryBusca = tipoBusca === 'cep' 
+    // Prepara a string de busca do Destino Principal
+    let queryBuscaP1 = tipoBusca === 'cep' 
         ? `${document.getElementById('rua_pelo_cep').value} ${document.getElementById('num_residencia_cep').value} São Paulo`
         : `${document.getElementById('destino').value} ${document.getElementById('num_residencia').value} São Paulo`;
     
     try {
-        const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBusca)}&format=json&addressdetails=1`);
-        const data = await resp.json();
-        
-        if(data && data.length > 0) {
-            const info = data[0];
-            if (tipoBusca === 'rua' && info.address) {
-                bairroGlobal = info.address.suburb || info.address.neighbourhood || info.address.city_district || "SÃO PAULO";
-            }
-            
-            document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
-            document.getElementById('campo-resumo').style.display = 'block';
-            document.getElementById('sec-tipo-local').style.display = 'block';
-            
-            setTimeout(() => {
-                map.invalidateSize();
-                control.setWaypoints([ORIGEM_FIXA, L.latLng(info.lat, info.lon)]);
-            }, 200);
+        let waypointsDaRota = [ORIGEM_FIXA];
 
-        } else { 
-            mostrarAviso("Endereço não localizado com precisão. Verifique a escrita e tente novamente."); 
+        // 1. Converte o Endereço 1 em Coordenada
+        const respP1 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP1)}&format=json&addressdetails=1`);
+        const dataP1 = await respP1.json();
+        
+        if(!dataP1 || dataP1.length === 0) {
+            mostrarAviso("1º Endereço não localizado com precisão. Verifique a escrita."); 
             liberarBotao();
+            return;
         }
+
+        const infoP1 = dataP1[0];
+        waypointsDaRota.push(L.latLng(infoP1.lat, infoP1.lon));
+        
+        // Define o bairro Global assumindo inicialmente que a Parada 1 é o destino final
+        if (tipoBusca === 'rua' && infoP1.address) {
+            bairroGlobal = infoP1.address.suburb || infoP1.address.neighbourhood || infoP1.address.city_district || "SÃO PAULO";
+        }
+
+        // 2. Se tiver 2ª Parada, converte o Endereço 2 em Coordenada
+        if (temParada2) {
+            let tipoBuscaP2 = document.getElementById('campo-cep-p2').style.display === 'block' ? 'cep' : 'rua';
+            let queryBuscaP2 = tipoBuscaP2 === 'cep' 
+                ? `${document.getElementById('rua_pelo_cep_p2').value} ${document.getElementById('num_residencia_cep_p2').value} São Paulo`
+                : `${document.getElementById('destino_parada2').value} ${document.getElementById('num_residencia_p2').value} São Paulo`;
+
+            const respP2 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP2)}&format=json&addressdetails=1`);
+            const dataP2 = await respP2.json();
+
+            if(!dataP2 || dataP2.length === 0) {
+                mostrarAviso("2º Endereço (Parada 2) não localizado. Verifique a escrita."); 
+                liberarBotao();
+                return;
+            }
+
+            const infoP2 = dataP2[0];
+            waypointsDaRota.push(L.latLng(infoP2.lat, infoP2.lon));
+            
+            // O Bairro Final do pedido passa a ser o bairro da última parada
+            if (tipoBuscaP2 === 'rua' && infoP2.address) {
+                bairroGlobal = infoP2.address.suburb || infoP2.address.neighbourhood || infoP2.address.city_district || "SÃO PAULO";
+            }
+        }
+        
+        // Finaliza Interface e entrega os pontos para o mapa desenhar
+        document.getElementById('res-bairro').innerText = bairroGlobal.toUpperCase();
+        document.getElementById('campo-resumo').style.display = 'block';
+        document.getElementById('sec-tipo-local').style.display = 'block';
+        
+        setTimeout(() => {
+            map.invalidateSize();
+            control.setWaypoints(waypointsDaRota); // Pode enviar 2 ou 3 pontos agora
+        }, 200);
+
     } catch (e) { 
         mostrarAviso("Erro de conexão ao buscar rota no mapa."); 
         liberarBotao();
     } 
 }
 
+// Evento escutado quando o mapa termina de processar a matemática da quilometragem
 control.on('routesfound', function(e) {
     const routes = e.routes[0];
     const km = routes.summary.totalDistance / 1000;
@@ -308,9 +466,18 @@ control.on('routesfound', function(e) {
     
     document.getElementById('aviso-taxa').style.display = (calculoBase < TAXA_MINIMA ? 'block' : 'none');
     
+    // Constrói a string de log (Origem -> Destino)
     let enderecoBuscado = tipoBusca === 'cep' 
-        ? `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})`
+        ? `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value}`
         : `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
+    
+    if (temParada2) {
+        let tipoBuscaP2 = document.getElementById('campo-cep-p2').style.display === 'block' ? 'cep' : 'rua';
+        let endP2 = tipoBuscaP2 === 'cep' 
+            ? `${document.getElementById('rua_pelo_cep_p2').value}, ${document.getElementById('num_residencia_cep_p2').value}`
+            : `${document.getElementById('destino_parada2').value}, ${document.getElementById('num_residencia_p2').value}`;
+        enderecoBuscado += ` | PARADA 2: ${endP2}`;
+    }
     
     registrarLogJS(km.toFixed(2), valorFormatado, enderecoBuscado, bairroGlobal.toUpperCase());
 
@@ -350,19 +517,34 @@ function obterDataFormatada(dataInput) {
     return `${diasSemana[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+/**
+ * Monta a mensagem final do WhatsApp com ou sem a 2ª parada.
+ */
 function finalizarEnvio() {
     const bloco = document.getElementById('bloco').value;
     const apto = document.getElementById('apto').value;
     
-    let destFinal = tipoBusca === 'cep' ? 
+    let dest1 = tipoBusca === 'cep' ? 
         `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})` :
         `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
+
+    let destFinalTexto = dest1;
+
+    // Incrementa a parada na mensagem do WhatsApp
+    if (temParada2) {
+        let tipoBuscaP2 = document.getElementById('campo-cep-p2').style.display === 'block' ? 'cep' : 'rua';
+        let dest2 = tipoBuscaP2 === 'cep' ? 
+            `${document.getElementById('rua_pelo_cep_p2').value}, ${document.getElementById('num_residencia_cep_p2').value}` :
+            `${document.getElementById('destino_parada2').value}, ${document.getElementById('num_residencia_p2').value}`;
+        
+        destFinalTexto = `1ª PARADA: ${dest1}%0A🛑 2ª PARADA: ${dest2}`;
+    }
 
     const dados = {
         data: obterDataFormatada(document.getElementById('data_entrega').value),
         hora: document.getElementById('hora_entrega').value,
         nome: document.getElementById('nome_cliente').value,
-        destino: destFinal,
+        destino: destFinalTexto.replace(/%0A/g, " - "), // Remove a quebra de linha pro Google Sheets
         bairro: bairroGlobal.toUpperCase(),
         ref: document.getElementById('ponto_referencia').value || "NÃO INFORMADO",
         km: document.getElementById('distancia').innerText,
@@ -373,7 +555,8 @@ function finalizarEnvio() {
     };
 
     let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
-    msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO:* ${dados.bairro}%0A⏱️ *TEMPO ESTIMADO:* ${tempoGlobal}%0A🏁 *DESTINO:* ${dados.destino}%0A`;
+    msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO (Final):* ${dados.bairro}%0A⏱️ *TEMPO EST.:* ${tempoGlobal}%0A`;
+    msg += `🏁 *ROTA:* %0A${destFinalTexto}%0A`;
     
     if(tipoResidencia === 'apto') msg += `🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}%0A`;
     msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
@@ -408,7 +591,6 @@ async function registrarLogJS(km, valor, endereco, bairro) {
     else if (/windows/i.test(textoDispositivo)) dispFormatado = "💻 Computador Windows";
     else if (/mac/i.test(textoDispositivo)) dispFormatado = "💻 Computador Mac";
 
-    // Chama a função global de IP que ajustamos
     let ipUsuario = await obterIpUsuario();
 
     let pacoteDeDados = { 
@@ -431,7 +613,6 @@ async function registrarLogJS(km, valor, endereco, bairro) {
         const resposta = await requisicao.json();
 
         if (resposta.result === "bloqueado") {
-            // Emite aviso visual se for bloqueado na hora de registrar
             mostrarAviso("⚠️ Seu dispositivo excedeu o limite de 5 cotações nesta semana.");
             return;
         }
