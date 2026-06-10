@@ -21,24 +21,19 @@
 </div>
 
 <div id="modalLimiteSemanal" class="modal-overlay">
-    
     <div class="msg-box danger">
-        
         <h2 style="color: #ff4757; margin-bottom: 15px;">⚠️ LIMITE EXCEDIDO</h2>
         <p>Você atingiu o limite máximo de consultas da versão free.</p>
         <p style="font-size: 0.9em; margin-bottom: 20px; color: #aaa;">Clique no botão abaixo para falar direto comigo.</p>
-        
         <a href="https://wa.me/5511981071822?text=Ol%C3%A1%2C%20Lucas!%20Meu%20sistema%20bloqueou%20por%20limite%20de%20consultas.%20Pode%20me%20ajudar%20com%20um%20or%C3%A7amento%20de%20frete%3F" 
            class="btn-whatsapp" 
            target="_blank" 
            rel="noopener noreferrer">
-           📱 FALAR COM O LUCAS
+            📱 FALAR COM O LUCAS
         </a>
-        
         <button onclick="document.getElementById('modalLimiteSemanal').style.display='none'" class="btn-txt">
             Voltar ao aplicativo
         </button>
-
     </div>
 </div>
 
@@ -59,13 +54,13 @@
         <button class="btn-outline-dark" onclick="fecharModal()">VOLTAR</button>
     </div>
 </div>
-
 <div class="header-top">
     <div class="logo-container"><img src="logo-cowboy-motofrete.png" alt="Logo Alencar Fretes" onerror="this.style.display='none'"></div>
     <div class="header-title"><h1>ALENCAR FRETES</h1></div>
 </div>
 
 <div class="container glass-panel">
+    
     <div class="row-endereco-num">
         <div class="input-group">
             <label>📅 DATA DA ENTREGA</label>
@@ -83,7 +78,7 @@
     </div>
     
     <div class="box-destaque glass-panel-inner">
-        <label class="glow-text">📍 COMO DESEJA INFORMAR O ENDEREÇO?</label>
+        <label class="glow-text">📍 DESTINO PRINCIPAL: COMO DESEJA INFORMAR?</label>
         <div class="tipo-busca">
             <button class="btn-selecao" id="btn-por-cep" onclick="selecionarBusca('cep')">POR CEP</button>
             <button class="btn-selecao" id="btn-por-rua" onclick="selecionarBusca('rua')">NOME DA RUA</button>
@@ -120,8 +115,55 @@
             </div>
         </div>
     </div>
+    <div class="input-group" style="margin-top: 15px; text-align: center;">
+        <button class="btn-outline-dark" id="btn-mostrar-parada2" onclick="mostrarParada2()" style="width: 100%; border: 1px dashed #ccc;">
+            ➕ ADICIONAR 2ª PARADA (OPCIONAL)
+        </button>
+    </div>
 
-    <div class="input-group">
+    <div id="bloco-parada2" class="box-destaque glass-panel-inner" style="display: none; margin-top: 15px; border-color: #f39c12;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="glow-text" style="color: #f39c12;">🛑 2ª PARADA</label>
+            <button onclick="ocultarParada2()" style="background: none; border: none; color: #ff4757; font-weight: bold; cursor: pointer;">❌ REMOVER</button>
+        </div>
+        
+        <div class="tipo-busca" style="margin-top: 10px;">
+            <button class="btn-selecao" id="btn-por-cep-p2" onclick="selecionarBuscaP2('cep')">POR CEP</button>
+            <button class="btn-selecao" id="btn-por-rua-p2" onclick="selecionarBuscaP2('rua')">NOME DA RUA</button>
+        </div>
+
+        <div id="campo-cep-p2" style="display: none; margin-top: 15px;">
+            <div class="row-endereco-num">
+                <div class="input-group">
+                    <label>📮 CEP (2ª Parada)</label>
+                    <input type="text" id="cep_parada2" placeholder="00000-000" onblur="buscarCepP2()" inputmode="numeric">
+                </div>
+                <div class="input-group">
+                    <label>Nº</label>
+                    <input type="text" id="num_residencia_cep_p2" placeholder="Ex: 123">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>📍 RUA</label>
+                <input type="text" id="rua_pelo_cep_p2" placeholder="A rua aparecerá aqui..." readonly class="input-readonly">
+            </div>
+        </div>
+
+        <div id="campo-rua-p2" style="display: none; margin-top: 15px;">
+            <div class="row-endereco-num">
+                <div class="input-group" style="position: relative; flex: 2;">
+                    <label>📍 RUA OU AVENIDA (2ª Parada)</label>
+                    <input type="text" id="destino_parada2" placeholder="Comece a digitar..." oninput="sugerirEnderecoP2(this.value)" autocomplete="off">
+                    <div id="lista-sugestoes-p2" class="autocomplete-lista"></div>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>Nº</label>
+                    <input type="text" id="num_residencia_p2" placeholder="Ex: 123">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="input-group" style="margin-top: 20px;">
         <label>🚩 PONTO DE REFERÊNCIA (OPCIONAL)</label>
         <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
     </div>
@@ -186,9 +228,11 @@
         <button class="btn-whatsapp glow-button" onclick="prepararEnvio()" style="margin-top: 25px;">📱 ENVIAR PEDIDO P/ WHATSAPP</button>
     </div>
 </div>
+
 <footer style="text-align: center; padding: 20px 0 30px; opacity: 0.6; font-size: 0.75rem; color: #fff; letter-spacing: 1px;">
-    Since @2025 - Version 2.0 Basic - Build 25.05.26 
+    Since @2025 - Version 2.0 Basic - Build 09.06.26 
 </footer>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 <script src="script.js?v=18"></script>
