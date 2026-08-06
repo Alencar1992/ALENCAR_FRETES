@@ -22,6 +22,29 @@ let temParada2 = false;
 
 // Variável global para armazenar o IP temporariamente e não sobrecarregar a API
 let ipGlobalCache = null;
+const REQUEST_TIMEOUT_MS = 8000;
+const MAX_INPUT_LENGTH = 160;
+
+function textoSeguro(valor, limite = MAX_INPUT_LENGTH) {
+    return String(valor ?? '')
+        .replace(/[\u0000-\u001F\u007F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, limite);
+}
+
+async function fetchComTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const resposta = await fetch(url, { ...options, signal: controller.signal });
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        return resposta;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
 
 // ==========================================
 // FUNÇÃO DE CAPTURA DE IP REUTILIZÁVEL
@@ -32,7 +55,7 @@ let ipGlobalCache = null;
 async function obterIpUsuario() {
     if (ipGlobalCache) return ipGlobalCache;
     try {
-        const respostaIp = await fetch('https://api.ipify.org?format=json');
+        const respostaIp = await fetchComTimeout('https://api.ipify.org?format=json', {}, 5000);
         const dadosIp = await respostaIp.json();
         ipGlobalCache = dadosIp.ip;
         return ipGlobalCache;
@@ -173,7 +196,7 @@ async function sugerirEndereco(texto) {
     timeoutBusca = setTimeout(async () => {
         try {
             const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
-            const resp = await fetch(url);
+            const resp = await fetchComTimeout(url);
             const data = await resp.json();
             
             lista.innerHTML = '';
@@ -208,7 +231,7 @@ async function sugerirEnderecoP2(texto) {
     timeoutBuscaP2 = setTimeout(async () => {
         try {
             const url = `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(texto + ' São Paulo')}&countrycodes=br&limit=5`;
-            const resp = await fetch(url);
+            const resp = await fetchComTimeout(url);
             const data = await resp.json();
             
             lista.innerHTML = '';
@@ -242,7 +265,7 @@ async function buscarCep() {
     inputRua.value = "Buscando...";
 
     try {
-        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const resp = await fetchComTimeout(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await resp.json();
         if (!data.erro) {
             inputRua.value = data.logradouro;
@@ -264,7 +287,7 @@ async function buscarCepP2() {
     inputRua.value = "Buscando...";
 
     try {
-        const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const resp = await fetchComTimeout(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await resp.json();
         if (!data.erro) {
             inputRua.value = data.logradouro;
@@ -353,15 +376,29 @@ async function iniciarVerificacao() {
 function validarExpediente() {
     const dataVal = document.getElementById('data_entrega').value;
     const horaVal = document.getElementById('hora_entrega').value;
-    const d = new Date(dataVal + 'T' + horaVal);
-    
-    if(d.getDay() >= 1 && d.getDay() <= 5 && d.getHours() >= 8 && d.getHours() <= 17) {
-        const modal = document.getElementById('modalExpediente');
-        if(modal) modal.style.display = 'flex';
-        else buscarRota(); 
-    } else { 
-        buscarRota(); 
+    const d = new Date(`${dataVal}T${horaVal}:00`);
+
+    if (Number.isNaN(d.getTime())) {
+        mostrarAviso("Data ou horário inválido.");
+        liberarBotao();
+        return;
     }
+
+    const minutos = d.getHours() * 60 + d.getMinutes();
+    const dentroDoExpediente =
+        d.getDay() >= 1 &&
+        d.getDay() <= 5 &&
+        minutos >= 8 * 60 &&
+        minutos <= 17 * 60;
+
+    if (dentroDoExpediente) {
+        buscarRota();
+        return;
+    }
+
+    const modal = document.getElementById('modalExpediente');
+    if (modal) modal.style.display = 'flex';
+    else buscarRota();
 }
 
 function continuarCalculo() {
@@ -389,7 +426,7 @@ async function buscarRota() {
         let waypointsDaRota = [ORIGEM_FIXA];
 
         // 1. Converte o Endereço 1 em Coordenada
-        const respP1 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP1)}&format=json&addressdetails=1`);
+        const respP1 = await fetchComTimeout(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP1)}&format=json&addressdetails=1&limit=1&countrycodes=br`);
         const dataP1 = await respP1.json();
         
         if(!dataP1 || dataP1.length === 0) {
@@ -413,7 +450,7 @@ async function buscarRota() {
                 ? `${document.getElementById('rua_pelo_cep_p2').value} ${document.getElementById('num_residencia_cep_p2').value} São Paulo`
                 : `${document.getElementById('destino_parada2').value} ${document.getElementById('num_residencia_p2').value} São Paulo`;
 
-            const respP2 = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP2)}&format=json&addressdetails=1`);
+            const respP2 = await fetchComTimeout(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(queryBuscaP2)}&format=json&addressdetails=1&limit=1&countrycodes=br`);
             const dataP2 = await respP2.json();
 
             if(!dataP2 || dataP2.length === 0) {
@@ -521,32 +558,42 @@ function obterDataFormatada(dataInput) {
  * Monta a mensagem final do WhatsApp com ou sem a 2ª parada.
  */
 function finalizarEnvio() {
-    const bloco = document.getElementById('bloco').value;
-    const apto = document.getElementById('apto').value;
-    
-    let dest1 = tipoBusca === 'cep' ? 
-        `${document.getElementById('rua_pelo_cep').value}, ${document.getElementById('num_residencia_cep').value} (CEP: ${document.getElementById('cep').value})` :
-        `${document.getElementById('destino').value}, ${document.getElementById('num_residencia').value}`;
-
-    let destFinalTexto = dest1;
-
-    // Incrementa a parada na mensagem do WhatsApp
-    if (temParada2) {
-        let tipoBuscaP2 = document.getElementById('campo-cep-p2').style.display === 'block' ? 'cep' : 'rua';
-        let dest2 = tipoBuscaP2 === 'cep' ? 
-            `${document.getElementById('rua_pelo_cep_p2').value}, ${document.getElementById('num_residencia_cep_p2').value}` :
-            `${document.getElementById('destino_parada2').value}, ${document.getElementById('num_residencia_p2').value}`;
-        
-        destFinalTexto = `1ª PARADA: ${dest1}%0A🛑 2ª PARADA: ${dest2}`;
+    if (!rotaCalculada) {
+        mostrarAviso("Calcule a rota novamente antes de enviar.");
+        return;
     }
 
+    const bloco = textoSeguro(document.getElementById('bloco').value, 20);
+    const apto = textoSeguro(document.getElementById('apto').value, 20);
+    const nome = textoSeguro(document.getElementById('nome_cliente').value, 100);
+    const referencia = textoSeguro(document.getElementById('ponto_referencia').value, 160) || "NÃO INFORMADO";
+
+    const dest1 = tipoBusca === 'cep'
+        ? `${textoSeguro(document.getElementById('rua_pelo_cep').value)}, ${textoSeguro(document.getElementById('num_residencia_cep').value, 20)} (CEP: ${textoSeguro(document.getElementById('cep').value, 9)})`
+        : `${textoSeguro(document.getElementById('destino').value)}, ${textoSeguro(document.getElementById('num_residencia').value, 20)}`;
+
+    const destinos = [dest1];
+
+    if (temParada2) {
+        const buscaP2PorCep = document.getElementById('campo-cep-p2').style.display === 'block';
+        const dest2 = buscaP2PorCep
+            ? `${textoSeguro(document.getElementById('rua_pelo_cep_p2').value)}, ${textoSeguro(document.getElementById('num_residencia_cep_p2').value, 20)}`
+            : `${textoSeguro(document.getElementById('destino_parada2').value)}, ${textoSeguro(document.getElementById('num_residencia_p2').value, 20)}`;
+        destinos.push(dest2);
+    }
+
+    const rotaTexto = destinos
+        .map((destino, indice) => `${indice + 1}ª PARADA: ${destino}`)
+        .join(" | ");
+
     const dados = {
+        idPedido: crypto.randomUUID ? crypto.randomUUID() : `pedido-${Date.now()}`,
         data: obterDataFormatada(document.getElementById('data_entrega').value),
         hora: document.getElementById('hora_entrega').value,
-        nome: document.getElementById('nome_cliente').value,
-        destino: destFinalTexto.replace(/%0A/g, " - "), // Remove a quebra de linha pro Google Sheets
-        bairro: bairroGlobal.toUpperCase(),
-        ref: document.getElementById('ponto_referencia').value || "NÃO INFORMADO",
+        nome,
+        destino: rotaTexto,
+        bairro: textoSeguro(bairroGlobal, 100).toUpperCase(),
+        ref: referencia,
         km: document.getElementById('distancia').innerText,
         valor: document.getElementById('valor').innerText,
         tipo: tipoResidencia.toUpperCase(),
@@ -554,30 +601,41 @@ function finalizarEnvio() {
         apto: apto || "---"
     };
 
-    let msg = `*NOVO PEDIDO - ALENCAR FRETES*%0A%0A`;
-    msg += `📅 *DATA:* ${dados.data}%0A⏰ *HORA:* ${dados.hora}%0A👤 *CLIENTE:* ${dados.nome}%0A🏘️ *BAIRRO (Final):* ${dados.bairro}%0A⏱️ *TEMPO EST.:* ${tempoGlobal}%0A`;
-    msg += `🏁 *ROTA:* %0A${destFinalTexto}%0A`;
-    
-    if(tipoResidencia === 'apto') msg += `🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}%0A`;
-    msg += `📍 *REF:* ${dados.ref}%0A📏 *DISTÂNCIA:* ${dados.km} km%0A💰 *VALOR:* ${dados.valor}`;
+    const linhas = [
+        "*NOVO PEDIDO - ALENCAR FRETES*",
+        "",
+        `📅 *DATA:* ${dados.data}`,
+        `⏰ *HORA:* ${dados.hora}`,
+        `👤 *CLIENTE:* ${dados.nome}`,
+        `🏘️ *BAIRRO (Final):* ${dados.bairro}`,
+        `⏱️ *TEMPO EST.:* ${tempoGlobal}`,
+        "",
+        "🏁 *ROTA:*",
+        ...destinos.map((destino, indice) => `${indice + 1}ª PARADA: ${destino}`)
+    ];
 
-    fetch(GOOGLE_SCRIPT_URL_PEDIDOS, { method: 'POST', mode: 'no-cors', body: JSON.stringify(dados) });
-    window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, '_blank');
+    if (tipoResidencia === 'apto') {
+        linhas.push(`🏢 *LOCAL:* Bloco ${dados.bloco} - Apto ${dados.apto}`);
+    }
+
+    linhas.push(
+        `📍 *REF:* ${dados.ref}`,
+        `📏 *DISTÂNCIA:* ${dados.km} km`,
+        `💰 *VALOR:* ${dados.valor}`
+    );
+
+    fetchComTimeout(GOOGLE_SCRIPT_URL_PEDIDOS, {
+        method: 'POST',
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(dados)
+    }).catch(() => {
+        console.warn("Não foi possível confirmar o salvamento do pedido.");
+    });
+
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(linhas.join("\n"))}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     fecharModal();
 }
-
-// Bloqueio de datas customizadas
-document.addEventListener("DOMContentLoaded", function() {
-    const inputData = document.getElementById('data_entrega');
-    if (inputData) {
-        inputData.addEventListener('change', function() {
-            if (this.value === '2026-03-07') {
-                mostrarAviso("⚠️ Data Indisponível, Eu tenho Compromissos o Dia todo!");
-                this.value = ''; 
-            }
-        });
-    }
-});
 
 // ==========================================
 // REGISTRO DE DADOS NO GOOGLE SHEETS
@@ -604,7 +662,7 @@ async function registrarLogJS(km, valor, endereco, bairro) {
     };
     
     try {
-        const requisicao = await fetch(GOOGLE_SCRIPT_URL_LOG, { 
+        const requisicao = await fetchComTimeout(GOOGLE_SCRIPT_URL_LOG, { 
             method: "POST", 
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(pacoteDeDados) 
