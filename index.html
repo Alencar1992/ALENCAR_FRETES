@@ -2,8 +2,11 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏍💨 ALENCAR FRETES</title>
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), camera=(), microphone=(), payment=()">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org; connect-src 'self' https://api.locationiq.com https://us1.locationiq.com https://viacep.com.br https://api.ipify.org https://script.google.com https://*.googleusercontent.com https://router.project-osrm.org; upgrade-insecure-requests">
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -74,7 +77,7 @@
     
     <div class="input-group">
         <label>👤 NOME DO CLIENTE</label>
-        <input type="text" id="nome_cliente" placeholder="Nome completo" autocomplete="name">
+        <input type="text" id="nome_cliente" placeholder="Nome completo" autocomplete="name" maxlength="100">
     </div>
     
     <div class="box-destaque glass-panel-inner">
@@ -93,7 +96,7 @@
             </div>
             <div class="input-group">
                 <label>Nº</label>
-                <input type="text" id="num_residencia_cep" placeholder="Ex: 123">
+                <input type="text" id="num_residencia_cep" placeholder="Ex: 123" maxlength="20">
             </div>
         </div>
         <div class="input-group">
@@ -106,12 +109,12 @@
         <div class="row-endereco-num">
             <div class="input-group" style="position: relative; flex: 2;">
                 <label>📍 RUA OU AVENIDA</label>
-                <input type="text" id="destino" placeholder="Comece a digitar..." oninput="sugerirEndereco(this.value)" autocomplete="off">
+                <input type="text" id="destino" placeholder="Comece a digitar..." maxlength="160" oninput="sugerirEndereco(this.value)" autocomplete="off">
                 <div id="lista-sugestoes" class="autocomplete-lista"></div>
             </div>
             <div class="input-group" style="flex: 1;">
                 <label>Nº</label>
-                <input type="text" id="num_residencia" placeholder="Ex: 123">
+                <input type="text" id="num_residencia" placeholder="Ex: 123" maxlength="20">
             </div>
         </div>
     </div>
@@ -140,7 +143,7 @@
                 </div>
                 <div class="input-group">
                     <label>Nº</label>
-                    <input type="text" id="num_residencia_cep_p2" placeholder="Ex: 123">
+                    <input type="text" id="num_residencia_cep_p2" placeholder="Ex: 123" maxlength="20">
                 </div>
             </div>
             <div class="input-group">
@@ -153,19 +156,19 @@
             <div class="row-endereco-num">
                 <div class="input-group" style="position: relative; flex: 2;">
                     <label>📍 RUA OU AVENIDA (2ª Parada)</label>
-                    <input type="text" id="destino_parada2" placeholder="Comece a digitar..." oninput="sugerirEnderecoP2(this.value)" autocomplete="off">
+                    <input type="text" id="destino_parada2" placeholder="Comece a digitar..." maxlength="160" oninput="sugerirEnderecoP2(this.value)" autocomplete="off">
                     <div id="lista-sugestoes-p2" class="autocomplete-lista"></div>
                 </div>
                 <div class="input-group" style="flex: 1;">
                     <label>Nº</label>
-                    <input type="text" id="num_residencia_p2" placeholder="Ex: 123">
+                    <input type="text" id="num_residencia_p2" placeholder="Ex: 123" maxlength="20">
                 </div>
             </div>
         </div>
     </div>
     <div class="input-group" style="margin-top: 20px;">
         <label>🚩 PONTO DE REFERÊNCIA (OPCIONAL)</label>
-        <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado...">
+        <input type="text" id="ponto_referencia" placeholder="Ex: Próximo ao mercado..." maxlength="160">
     </div>
     
     <div class="botoes-acao">
@@ -216,11 +219,11 @@
             <div class="row-endereco-num">
                 <div class="input-group">
                     <label>BLOCO</label>
-                    <input type="text" id="bloco" placeholder="Ex: B">
+                    <input type="text" id="bloco" placeholder="Ex: B" maxlength="20">
                 </div>
                 <div class="input-group">
                     <label>APTO</label>
-                    <input type="text" id="apto" placeholder="Ex: 101">
+                    <input type="text" id="apto" placeholder="Ex: 101" maxlength="20">
                 </div>
             </div>
         </div>
@@ -235,6 +238,15 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-<script src="script.js?v=18"></script>
+<script src="script.js?v=19"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {
+            console.warn('Service Worker indisponível.');
+        });
+    });
+}
+</script>
 </body>
 </html>
