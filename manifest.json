@@ -1,11 +1,13 @@
 {
-  "name": "🏍💨Alencar Fretes",
+  "id": "./",
+  "name": "Alencar Fretes",
   "short_name": "Alencar",
-  "description": "Entregas Alencar",
-  "start_url": "./index.html",
+  "description": "Cálculo e solicitação de fretes",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#ff9f43",
+  "background_color": "#0a0a0c",
+  "theme_color": "#2ecc71",
   "icons": [
     {
       "src": "ícone-512.png",

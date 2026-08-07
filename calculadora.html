@@ -2,8 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CALCULADORA DE FRETE</title>
+    <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; form-action 'none'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org; connect-src https://api.locationiq.com https://us1.locationiq.com https://viacep.com.br https://api.ipify.org https://script.google.com https://*.googleusercontent.com https://router.project-osrm.org; upgrade-insecure-requests">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     <style>
@@ -107,15 +109,15 @@
             <label>CEP DE DESTINO</label>
             <input type="tel" id="input-cep" placeholder="Ex: 01001-000" onblur="buscarEnderecoCep()">
             <label>NÚMERO</label>
-            <input type="tel" id="num-cep" placeholder="Ex: 123">
+            <input type="tel" id="num-cep" placeholder="Ex: 123" maxlength="20">
             <input type="hidden" id="rua-oculta-cep">
         </div>
 
         <div id="aba-rua" style="display: none;">
             <label>NOME DA RUA / AVENIDA</label>
-            <input type="text" id="input-rua" placeholder="Ex: Avenida Paulista">
+            <input type="text" id="input-rua" placeholder="Ex: Avenida Paulista" maxlength="160">
             <label>NÚMERO</label>
-            <input type="tel" id="num-rua" placeholder="Ex: 1000">
+            <input type="tel" id="num-rua" placeholder="Ex: 1000" maxlength="20">
         </div>
 
         <button class="btn-3d-green" id="btn-calcular" onclick="calcularFrete()">📍 CALCULAR ROTA</button>
@@ -153,7 +155,7 @@
 
     <div class="footer">
         <p>CALCULADORA DE FRETE v1.6 Free - Build 25.05.26</p>
-        <a href="https://alencar1992.github.io/ALENCAR_FRETES/" target="_blank">🔗 ACESSAR APP OFICIAL DE PEDIDOS</a>
+        <a href="https://alencar1992.github.io/ALENCAR_FRETES/" target="_blank" rel="noopener noreferrer">🔗 ACESSAR APP OFICIAL DE PEDIDOS</a>
     </div>
 </div>
 
@@ -196,6 +198,23 @@
     
     const CIDADES_PERMITIDAS = ["sao paulo", "taboao da serra", "itapecerica da serra", "embu das artes", "embu"];
     const URL_GAS = "https://script.google.com/macros/s/AKfycbyRQRB6p7ORaWgEro0KhS7rQ784g206cj0HiktkUjcn2TludQ4MHvqbRo163KHPpKYOIA/exec";
+    const REQUEST_TIMEOUT_MS = 8000;
+
+    function textoSeguro(valor, limite = 160) {
+        return String(valor ?? '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limite);
+    }
+
+    async function fetchComTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const resposta = await fetch(url, { ...options, signal: controller.signal });
+            if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+            return resposta;
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
     
     let tipoAtual = '';
     let dadosCalculados = {};
@@ -252,7 +271,7 @@
         const cep = cepInput.value.replace(/\D/g, '');
         if (cep.length !== 8) return;
         try {
-            const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const resp = await fetchComTimeout(`https://viacep.com.br/ws/${cep}/json/`);
             const data = await resp.json();
             
             if (!data.erro) {
@@ -321,7 +340,7 @@
         // --- INÍCIO DA VERIFICAÇÃO DE LIMITE POR IP ---
         let ipAtual = "Desconhecido";
         try {
-            let resIp = await fetch("https://api.ipify.org?format=json");
+            let resIp = await fetchComTimeout("https://api.ipify.org?format=json", {}, 5000);
             let jsonIp = await resIp.json();
             ipAtual = jsonIp.ip;
         } catch(e) { console.log("IP não capturado"); }
@@ -343,7 +362,7 @@
         btn.innerText = "⏳ CALCULANDO...";
 
         try {
-            const resp = await fetch(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(enderecoBusca)}&format=json&addressdetails=1&limit=10`);
+            const resp = await fetchComTimeout(`https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_TOKEN}&q=${encodeURIComponent(enderecoBusca)}&format=json&addressdetails=1&limit=10&countrycodes=br`);
             const data = await resp.json();
             
             if(data && data.length > 0) {
@@ -429,9 +448,19 @@
     }
 
     function enviarWhatsapp() {
-        if(!dadosCalculados.km) return;
-        const texto = `*ORÇAMENTO DE FRETE:*%0A%0A📍 *Destino:* ${dadosCalculados.enderecoCompleto}%0A🏘️ *Bairro:* ${dadosCalculados.bairro}%0A📏 *Distância:* ${dadosCalculados.km} KM%0A⏱️ *Tempo Estimado:* ${dadosCalculados.tempo} Minutos%0A💰 *Valor Total:* ${dadosCalculados.valor}%0A%0A_Posso confirmar o agendamento?_`;
-        window.open(`https://wa.me/?text=${texto}`, '_blank');
+        if (!dadosCalculados.km) return;
+        const texto = [
+            "*ORÇAMENTO DE FRETE:*",
+            "",
+            `📍 *Destino:* ${textoSeguro(dadosCalculados.enderecoCompleto)}`,
+            `🏘️ *Bairro:* ${textoSeguro(dadosCalculados.bairro, 100)}`,
+            `📏 *Distância:* ${dadosCalculados.km} KM`,
+            `⏱️ *Tempo Estimado:* ${dadosCalculados.tempo} Minutos`,
+            `💰 *Valor Total:* ${dadosCalculados.valor}`,
+            "",
+            "_Posso confirmar o agendamento?_"
+        ].join("\n");
+        window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
     }
 
     // --- FUNÇÃO DE LOG NORMAL DE SUCESSO ---
