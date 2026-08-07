@@ -1,4 +1,4 @@
-# Publicação automática do Alencar Fretes
+# Publicação automática do Alencar Fretes — Pages habilitado
 name: Deploy GitHub Pages
 
 on:
